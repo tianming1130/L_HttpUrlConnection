@@ -11,7 +11,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.HashMap;
+import cn.zknu.l_httpurlconnection.net.CallBack;
+import cn.zknu.l_httpurlconnection.net.HttpUtil;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final Bitmap bitmap=HttpConnectionUtil.downLoadFile();
+                final Bitmap bitmap= HttpUtil.downLoadFile();
                 if (bitmap!=null){
                     runOnUiThread(new Runnable() {
                         @Override
@@ -85,16 +86,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
-                HashMap<String, String> map = new HashMap<>();
-                map.put("key", "post");
-                String str = HttpConnectionUtil.requestPost(map);
-                Log.i("TAG", str);
-                Message msg = mHander.obtainMessage();
-                Bundle bundle = new Bundle();
-                bundle.putString("data", str);
-                msg.setData(bundle);
-                msg.what = 0;
-                mHander.sendMessage(msg);
+                HttpUtil.requestPost(new CallBack() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i("TAG", response);
+                        Message msg = mHander.obtainMessage();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("data", response);
+                        msg.setData(bundle);
+                        msg.what = 0;
+                        mHander.sendMessage(msg);
+                    }
+
+                    @Override
+                    public void onFailed(String response) {
+
+                    }
+                });
+
             }
         }).start();
     }
@@ -103,16 +112,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
-                HashMap<String,String> map=new HashMap<>();
-                map.put("key","get");
-                String str=HttpConnectionUtil.requestGet(map);
-                Log.i("TAG",str);
-                Message msg=mHander.obtainMessage();
-                Bundle bundle=new Bundle();
-                bundle.putString("data",str);
-                msg.setData(bundle);
-                msg.what=0;
-                mHander.sendMessage(msg);
+                HttpUtil.requestGet(new CallBack() {
+                    @Override
+                    public void onResponse(String response) {
+                        Message msg=mHander.obtainMessage();
+                        Bundle bundle=new Bundle();
+                        bundle.putString("data",response);
+                        msg.setData(bundle);
+                        msg.what=0;
+                        mHander.sendMessage(msg);
+                    }
+
+                    @Override
+                    public void onFailed(String response) {
+
+                    }
+                });
             }
         }).start();
     }

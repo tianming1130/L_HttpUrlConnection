@@ -1,9 +1,7 @@
-package cn.zknu.l_httpurlconnection;
+package cn.zknu.l_httpurlconnection.net;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -14,30 +12,19 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.HashMap;
 
 /**
  * Created by Administrator on 2018\4\9 0009.
  */
 
-public class HttpConnectionUtil {
+public class HttpUtil {
     private static final String TAG = "HttpConnectionUntil";
-    public static String requestGet(@NonNull HashMap<String,String > paramsMap){
-        String strRet="";
+    public static void  requestGet(CallBack callBack){
         HttpURLConnection urlConn=null;
         try {
-            String baseUrl="http://10.0.2.2/get.php?";
-            StringBuilder sBuilder=new StringBuilder();
-            for (String key:paramsMap.keySet()){
-                sBuilder.append("&");
-                sBuilder.append(String.format("%s=%s",key, URLEncoder.encode(paramsMap.get(key),"utf-8")));
-            }
-            String tempParams=sBuilder.toString();
-            tempParams=tempParams.substring(1);
-            String requestUrl=baseUrl+tempParams;
+            String baseUrl="http://10.0.2.2/get.php?key=get method";
 
-            Log.i(TAG,"GET-URL---->"+requestUrl);
-            URL url=new URL(requestUrl);
+            URL url=new URL(baseUrl);
 
             urlConn= (HttpURLConnection) url.openConnection();
 
@@ -47,9 +34,9 @@ public class HttpConnectionUtil {
             urlConn.connect();
             if (urlConn.getResponseCode()==200){
                 InputStream is=urlConn.getInputStream();
-                strRet="Get获取数据成功--->"+streamToString(is);
+                callBack.onResponse("Get获取数据成功--->"+streamToString(is));
             }else {
-                strRet="Get获取数据失败";
+                callBack.onFailed("Get获取数据失败");
             }
 
         } catch (MalformedURLException e) {
@@ -62,24 +49,18 @@ public class HttpConnectionUtil {
             if (urlConn!=null){
                 urlConn.disconnect();
             }
-            return strRet;
         }
     }
-    public static String requestPost(HashMap<String,String> paramsMap){
-        String strRet="";
+    public static void requestPost(CallBack callBack){
+
         HttpURLConnection urlConn=null;
         try {
             String baseUrl="http://10.0.2.2/post.php";
+
             StringBuilder sBuilder=new StringBuilder();
-            for (String key:paramsMap.keySet()){
-                sBuilder.append("&");
-                sBuilder.append(String.format("%s=%s",key, URLEncoder.encode(paramsMap.get(key),"utf-8")));
-            }
-            String tempParams=sBuilder.toString();
-            String postBody=tempParams.substring(1);
+            sBuilder.append(String.format("%s=%s","key", URLEncoder.encode("post method","utf-8")));
+            String postBody=sBuilder.toString();
 
-
-            Log.i(TAG,"POST-Body---->"+postBody);
             URL url=new URL(baseUrl);
 
             urlConn= (HttpURLConnection) url.openConnection();
@@ -99,9 +80,9 @@ public class HttpConnectionUtil {
             os.close();
             if (urlConn.getResponseCode()==200){
                 InputStream is=urlConn.getInputStream();
-                strRet="Post获取数据成功--->"+streamToString(is);
+                callBack.onResponse("Post获取数据成功--->"+streamToString(is));
             }else {
-                strRet="Post获取数据失败";
+                callBack.onFailed("Post获取数据失败"+streamToString(urlConn.getErrorStream()));
             }
 
         } catch (MalformedURLException e) {
@@ -111,11 +92,9 @@ public class HttpConnectionUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }finally {
-
             if (urlConn!=null){
                 urlConn.disconnect();
             }
-            return strRet;
         }
     }
     public static Bitmap downLoadFile(){
