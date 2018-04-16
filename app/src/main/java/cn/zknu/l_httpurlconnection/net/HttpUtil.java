@@ -19,83 +19,92 @@ import java.net.URLEncoder;
 
 public class HttpUtil {
     private static final String TAG = "HttpConnectionUntil";
-    public static void  requestGet(CallBack callBack){
-        HttpURLConnection urlConn=null;
-        try {
-            String baseUrl="http://10.0.2.2/get.php?key=get method";
+    public static void  requestGet(final CallBack callBack){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpURLConnection urlConn=null;
+                try {
+                    String baseUrl="http://10.0.2.2/get.php?key=get method";
 
-            URL url=new URL(baseUrl);
+                    URL url=new URL(baseUrl);
 
-            urlConn= (HttpURLConnection) url.openConnection();
+                    urlConn= (HttpURLConnection) url.openConnection();
 
-            urlConn.setRequestMethod("GET");
-            urlConn.setConnectTimeout(5*1000);
-            urlConn.setReadTimeout(5*1000);
-            urlConn.connect();
-            if (urlConn.getResponseCode()==200){
-                InputStream is=urlConn.getInputStream();
-                callBack.onResponse("Get获取数据成功--->"+streamToString(is));
-            }else {
-                callBack.onFailed("Get获取数据失败");
+                    urlConn.setRequestMethod("GET");
+                    urlConn.setConnectTimeout(5*1000);
+                    urlConn.setReadTimeout(5*1000);
+                    urlConn.connect();
+                    if (urlConn.getResponseCode()==200){
+                        InputStream is=urlConn.getInputStream();
+                        callBack.onResponse("Get获取数据成功--->"+streamToString(is));
+                    }else {
+                        callBack.onFailed("Get获取数据失败");
+                    }
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }finally {
+                    if (urlConn != null) {
+                        urlConn.disconnect();
+                    }
+                }
             }
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
-            if (urlConn!=null){
-                urlConn.disconnect();
-            }
-        }
+        }).start();
     }
-    public static void requestPost(CallBack callBack){
+    public static void requestPost(final CallBack callBack){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpURLConnection urlConn=null;
+                try {
+                    String baseUrl="http://10.0.2.2/post.php";
 
-        HttpURLConnection urlConn=null;
-        try {
-            String baseUrl="http://10.0.2.2/post.php";
+                    StringBuilder sBuilder=new StringBuilder();
+                    sBuilder.append(String.format("%s=%s","key", URLEncoder.encode("post method","utf-8")));
+                    String postBody=sBuilder.toString();
 
-            StringBuilder sBuilder=new StringBuilder();
-            sBuilder.append(String.format("%s=%s","key", URLEncoder.encode("post method","utf-8")));
-            String postBody=sBuilder.toString();
+                    URL url=new URL(baseUrl);
 
-            URL url=new URL(baseUrl);
+                    urlConn= (HttpURLConnection) url.openConnection();
 
-            urlConn= (HttpURLConnection) url.openConnection();
+                    urlConn.setRequestMethod("POST");
+                    urlConn.setConnectTimeout(5*1000);
+                    urlConn.setReadTimeout(5*1000);
+                    urlConn.setDoInput(true);
+                    urlConn.setDoOutput(true);
+                    urlConn.setUseCaches(false);
 
-            urlConn.setRequestMethod("POST");
-            urlConn.setConnectTimeout(5*1000);
-            urlConn.setReadTimeout(5*1000);
-            urlConn.setDoInput(true);
-            urlConn.setDoOutput(true);
-            urlConn.setUseCaches(false);
+                    urlConn.connect();
 
-            urlConn.connect();
+                    OutputStream os=urlConn.getOutputStream();
+                    os.write(postBody.getBytes());
+                    os.flush();
+                    os.close();
+                    if (urlConn.getResponseCode()==200){
+                        InputStream is=urlConn.getInputStream();
+                        callBack.onResponse("Post获取数据成功--->"+streamToString(is));
+                    }else {
+                        callBack.onFailed("Post获取数据失败"+streamToString(urlConn.getErrorStream()));
+                    }
 
-            OutputStream os=urlConn.getOutputStream();
-            os.write(postBody.getBytes());
-            os.flush();
-            os.close();
-            if (urlConn.getResponseCode()==200){
-                InputStream is=urlConn.getInputStream();
-                callBack.onResponse("Post获取数据成功--->"+streamToString(is));
-            }else {
-                callBack.onFailed("Post获取数据失败"+streamToString(urlConn.getErrorStream()));
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }finally {
+                    if (urlConn!=null){
+                        urlConn.disconnect();
+                    }
+                }
             }
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
-            if (urlConn!=null){
-                urlConn.disconnect();
-            }
-        }
+        }).start();
     }
     public static Bitmap downLoadFile(){
         Bitmap bitmap=null;

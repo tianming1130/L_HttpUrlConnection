@@ -30,11 +30,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Down"/>
-        <Button
-            android:id="@+id/btn_upload"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Up"/>
     </LinearLayout>
     <TextView
         android:id="@+id/tv_show_msg"

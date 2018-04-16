@@ -14,12 +14,13 @@ import android.widget.TextView;
 import cn.zknu.l_httpurlconnection.net.CallBack;
 import cn.zknu.l_httpurlconnection.net.HttpUtil;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Button btnGet,btnPost,btnDownload;
+    private Button btnGet, btnPost, btnDownload;
     private TextView mShowMsg;
     private Handler mHander;
     private ImageView mImageShow;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnPost.setOnClickListener(this);
         btnDownload.setOnClickListener(this);
 
-        mHander=new Handler(){
+        mHander = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
@@ -43,18 +44,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initView() {
-        btnGet=(Button)findViewById(R.id.btn_get);
-        btnPost=(Button)findViewById(R.id.btn_post);
-        btnDownload=(Button)findViewById(R.id.btn_download);
-        mShowMsg =(TextView)findViewById(R.id.tv_show_msg);
-        mImageShow=(ImageView)findViewById(R.id.iv_show);
+        btnGet = (Button) findViewById(R.id.btn_get);
+        btnPost = (Button) findViewById(R.id.btn_post);
+        btnDownload = (Button) findViewById(R.id.btn_download);
+        mShowMsg = (TextView) findViewById(R.id.tv_show_msg);
+        mImageShow = (ImageView) findViewById(R.id.iv_show);
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btn_get:
-               getAndShowData();
+                getAndShowData();
                 break;
             case R.id.btn_post:
                 postAndShowData();
@@ -69,8 +70,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final Bitmap bitmap= HttpUtil.downLoadFile();
-                if (bitmap!=null){
+                final Bitmap bitmap = HttpUtil.downLoadFile();
+                if (bitmap != null) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -83,52 +84,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void postAndShowData() {
-        new Thread(new Runnable() {
+        HttpUtil.requestPost(new CallBack() {
             @Override
-            public void run() {
-                HttpUtil.requestPost(new CallBack() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.i("TAG", response);
-                        Message msg = mHander.obtainMessage();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("data", response);
-                        msg.setData(bundle);
-                        msg.what = 0;
-                        mHander.sendMessage(msg);
-                    }
+            public void onResponse(String response) {
+                Log.i("TAG", response);
+                Message msg = mHander.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putString("data", response);
+                msg.setData(bundle);
+                msg.what = 0;
+                mHander.sendMessage(msg);
+            }
 
-                    @Override
-                    public void onFailed(String response) {
-
-                    }
-                });
+            @Override
+            public void onFailed(String response) {
 
             }
-        }).start();
+        });
     }
 
     private void getAndShowData() {
-        new Thread(new Runnable() {
+
+        HttpUtil.requestGet(new CallBack() {
             @Override
-            public void run() {
-                HttpUtil.requestGet(new CallBack() {
-                    @Override
-                    public void onResponse(String response) {
-                        Message msg=mHander.obtainMessage();
-                        Bundle bundle=new Bundle();
-                        bundle.putString("data",response);
-                        msg.setData(bundle);
-                        msg.what=0;
-                        mHander.sendMessage(msg);
-                    }
-
-                    @Override
-                    public void onFailed(String response) {
-
-                    }
-                });
+            public void onResponse(String response) {
+                Message msg = mHander.obtainMessage();
+                Bundle bundle = new Bundle();
+                bundle.putString("data", response);
+                msg.setData(bundle);
+                msg.what = 0;
+                mHander.sendMessage(msg);
             }
-        }).start();
+
+            @Override
+            public void onFailed(String response) {
+
+            }
+        });
+
     }
 }
