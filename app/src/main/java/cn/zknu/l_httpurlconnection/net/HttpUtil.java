@@ -19,29 +19,24 @@ import java.net.URLEncoder;
 
 public class HttpUtil {
     private static final String TAG = "HttpConnectionUntil";
-    public static void  requestGet(final CallBack callBack){
+    public static void  requestGet(final CallBackString callBack){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 HttpURLConnection urlConn=null;
                 try {
                     String baseUrl="http://10.0.2.2/get.php?key=get method";
-
                     URL url=new URL(baseUrl);
-
                     urlConn= (HttpURLConnection) url.openConnection();
 
                     urlConn.setRequestMethod("GET");
                     urlConn.setConnectTimeout(5*1000);
                     urlConn.setReadTimeout(5*1000);
                     urlConn.connect();
-                    if (urlConn.getResponseCode()==200){
-                        InputStream is=urlConn.getInputStream();
-                        callBack.onResponse("Get获取数据成功--->"+streamToString(is));
-                    }else {
-                        callBack.onFailed("Get获取数据失败");
+                    if (urlConn.getResponseCode()==200) {
+                        InputStream is = urlConn.getInputStream();
+                        callBack.onResponse("Get获取数据成功--->" + streamToString(is));
                     }
-
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (UnsupportedEncodingException e) {
@@ -56,7 +51,7 @@ public class HttpUtil {
             }
         }).start();
     }
-    public static void requestPost(final CallBack callBack){
+    public static void requestPost(final CallBackString callBack){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -88,10 +83,7 @@ public class HttpUtil {
                     if (urlConn.getResponseCode()==200){
                         InputStream is=urlConn.getInputStream();
                         callBack.onResponse("Post获取数据成功--->"+streamToString(is));
-                    }else {
-                        callBack.onFailed("Post获取数据失败"+streamToString(urlConn.getErrorStream()));
                     }
-
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (UnsupportedEncodingException e) {
@@ -106,34 +98,39 @@ public class HttpUtil {
             }
         }).start();
     }
-    public static Bitmap downLoadFile(){
-        Bitmap bitmap=null;
-        HttpURLConnection urlConn=null;
-        try {
-            String baseUrl="http://10.0.2.2/1.jpg";
-            URL url=new URL(baseUrl);
-            urlConn= (HttpURLConnection) url.openConnection();
-            urlConn.setRequestMethod("GET");
-            urlConn.setConnectTimeout(5*1000);
-            urlConn.setReadTimeout(5*1000);
-            urlConn.connect();
-            if (urlConn.getResponseCode()==200){
-                InputStream is=urlConn.getInputStream();
-                bitmap= BitmapFactory.decodeStream(is);
+    public static void downLoadFile(final CallBackBitmap callBackBitmap){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap bitmap;
+                HttpURLConnection urlConn=null;
+                try {
+                    String baseUrl="http://10.0.2.2/1.jpg";
+                    URL url=new URL(baseUrl);
+                    urlConn= (HttpURLConnection) url.openConnection();
+                    urlConn.setRequestMethod("GET");
+                    urlConn.setConnectTimeout(5*1000);
+                    urlConn.setReadTimeout(5*1000);
+                    urlConn.connect();
+                    if (urlConn.getResponseCode()==200){
+                        InputStream is=urlConn.getInputStream();
+                        bitmap= BitmapFactory.decodeStream(is);
+                        callBackBitmap.onResponse(bitmap);
+                    }
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }finally {
+                    if (urlConn!=null){
+                        urlConn.disconnect();
+                    }
+                }
             }
+        }).start();
 
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
-            if (urlConn!=null){
-                urlConn.disconnect();
-            }
-            return bitmap;
-        }
     }
     private static String streamToString(InputStream is) {
         BufferedInputStream bis=new BufferedInputStream(is);

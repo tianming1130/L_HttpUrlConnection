@@ -11,11 +11,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import cn.zknu.l_httpurlconnection.net.CallBack;
+import cn.zknu.l_httpurlconnection.net.CallBackBitmap;
+import cn.zknu.l_httpurlconnection.net.CallBackString;
 import cn.zknu.l_httpurlconnection.net.HttpUtil;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private static final int STRING=0;
+    private static final int BITMAP =1 ;
     private Button btnGet, btnPost, btnDownload;
     private TextView mShowMsg;
     private Handler mHander;
@@ -38,7 +41,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                mShowMsg.setText(msg.getData().getString("data"));
+                switch (msg.what){
+                    case STRING:
+                        mShowMsg.setText((String)msg.obj);
+                        break;
+                    case BITMAP:
+                        mImageShow.setImageBitmap((Bitmap)msg.obj);
+                        break;
+                }
             }
         };
     }
@@ -67,60 +77,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void downloadImage() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final Bitmap bitmap = HttpUtil.downLoadFile();
-                if (bitmap != null) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mImageShow.setImageBitmap(bitmap);
+
+                HttpUtil.downLoadFile(new CallBackBitmap() {
+                    @Override
+                    public void onResponse(final Bitmap response) {
+                        if (response != null) {
+                            Message msg=mHander.obtainMessage();
+                            msg.obj=response;
+                            msg.what=BITMAP;
+                            mHander.sendMessage(msg);
                         }
-                    });
-                }
-            }
-        }).start();
+                    }
+
+                    @Override
+                    public void onFailed(Exception e) {
+
+                    }
+                });
     }
 
     private void postAndShowData() {
-        HttpUtil.requestPost(new CallBack() {
+        HttpUtil.requestPost(new CallBackString() {
             @Override
             public void onResponse(String response) {
                 Log.i("TAG", response);
                 Message msg = mHander.obtainMessage();
-                Bundle bundle = new Bundle();
-                bundle.putString("data", response);
-                msg.setData(bundle);
-                msg.what = 0;
+                msg.what = STRING;
+                msg.obj=response;
                 mHander.sendMessage(msg);
             }
 
             @Override
-            public void onFailed(String response) {
+            public void onFailed(Exception e) {
 
             }
         });
     }
 
     private void getAndShowData() {
-
-        HttpUtil.requestGet(new CallBack() {
+        HttpUtil.requestGet(new CallBackString() {
             @Override
             public void onResponse(String response) {
                 Message msg = mHander.obtainMessage();
-                Bundle bundle = new Bundle();
-                bundle.putString("data", response);
-                msg.setData(bundle);
+                msg.obj=response;
                 msg.what = 0;
                 mHander.sendMessage(msg);
             }
 
             @Override
-            public void onFailed(String response) {
+            public void onFailed(Exception e) {
 
             }
         });
-
     }
 }
